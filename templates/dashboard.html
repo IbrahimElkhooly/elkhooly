@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">لوحة التحكم التحليلية</h2>
+
+    <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="students-tab" data-bs-toggle="tab" href="#students" role="tab">👨‍🎓 الطلاب في المواد</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="exams-tab" data-bs-toggle="tab" href="#exams" role="tab">📊 متوسط درجات الامتحانات</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="homeworks-tab" data-bs-toggle="tab" href="#homeworks" role="tab">📋 تسليمات الواجبات</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="codes-tab" data-bs-toggle="tab" href="#codes" role="tab">🔑 أكواد التسجيل</a>
+        </li>
+    </ul>
+
+    <div class="tab-content p-3 border border-top-0">
+
+        <!-- الطلاب في المواد -->
+        <div class="tab-pane fade show active" id="students" role="tabpanel">
+            <h4>👨‍🎓 عدد الطلاب في كل مادة</h4>
+
+            <input type="text" id="filterStudents" class="form-control mb-2" placeholder="فلتر حسب المادة">
+
+            <canvas id="studentsChart"></canvas>
+            <table class="table table-bordered table-striped mt-3" id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>عدد الطلاب</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in students_per_subject %}
+                    <tr>
+                        <td>{{ row.subject_name }}</td>
+                        <td>{{ row.student_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- متوسط درجات الامتحانات -->
+        <div class="tab-pane fade" id="exams" role="tabpanel">
+            <h4>📊 متوسط درجات الامتحانات</h4>
+
+            <input type="text" id="filterExams" class="form-control mb-2" placeholder="فلتر حسب المادة">
+
+            <canvas id="examsChart"></canvas>
+            <table class="table table-bordered table-striped mt-3" id="examsTable">
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>متوسط الدرجات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in avg_scores_per_subject %}
+                    <tr>
+                        <td>{{ row.subject_name }}</td>
+                        <td>{{ row.avg_score|round(2) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- تسليمات الواجبات -->
+        <div class="tab-pane fade" id="homeworks" role="tabpanel">
+            <h4>📋 حالة تسليمات الواجبات</h4>
+
+            <input type="text" id="filterHomeworks" class="form-control mb-2" placeholder="فلتر حسب المادة">
+
+            <canvas id="homeworksChart"></canvas>
+            <table class="table table-bordered table-striped mt-3" id="homeworksTable">
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>الواجب</th>
+                        <th>عدد الطلاب</th>
+                        <th>تم التسليم</th>
+                        <th>لم يتم التسليم</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hw in homework_submissions %}
+                    <tr>
+                        <td>{{ hw.subject_name }}</td>
+                        <td>{{ hw.title }}</td>
+                        <td>{{ hw.total_students }}</td>
+                        <td>{{ hw.submitted_students }}</td>
+                        <td>{{ hw.not_submitted }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- أكواد التسجيل -->
+        <div class="tab-pane fade" id="codes" role="tabpanel">
+            <h4>🔑 إحصائيات أكواد التسجيل</h4>
+
+            <input type="text" id="filterCodes" class="form-control mb-2" placeholder="فلتر حسب المادة">
+
+            <canvas id="codesChart"></canvas>
+            <table class="table table-bordered table-striped mt-3" id="codesTable">
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>إجمالي الأكواد</th>
+                        <th>أكواد مستخدمة</th>
+                        <th>أكواد غير مستخدمة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for code in codes_usage %}
+                    <tr>
+                        <td>{{ code.subject_name }}</td>
+                        <td>{{ code.total_codes }}</td>
+                        <td>{{ code.used_codes }}</td>
+                        <td>{{ code.unused_codes }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const filterTable = (inputId, tableId) => {
+        const filter = document.getElementById(inputId).value.toLowerCase();
+        const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+        rows.forEach(row => {
+            const subject = row.cells[0].textContent.toLowerCase();
+            row.style.display = subject.includes(filter) ? '' : 'none';
+        });
+    };
+
+    ['filterStudents', 'filterExams', 'filterHomeworks', 'filterCodes'].forEach((filterId, index) => {
+        const tableIds = ['studentsTable', 'examsTable', 'homeworksTable', 'codesTable'];
+        document.getElementById(filterId).addEventListener('input', () => filterTable(filterId, tableIds[index]));
+    });
+
+    new Chart(document.getElementById('studentsChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ students_per_subject|map(attribute='subject_name')|list|tojson }},
+            datasets: [{ label: 'عدد الطلاب', data: {{ students_per_subject|map(attribute='student_count')|list|tojson }}, backgroundColor: '#007bff' }]
+        }
+    });
+
+    new Chart(document.getElementById('examsChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ avg_scores_per_subject|map(attribute='subject_name')|list|tojson }},
+            datasets: [{ label: 'متوسط الدرجات', data: {{ avg_scores_per_subject|map(attribute='avg_score')|list|tojson }}, backgroundColor: '#28a745' }]
+        }
+    });
+
+    new Chart(document.getElementById('homeworksChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ homework_submissions|map(attribute='title')|list|tojson }},
+            datasets: [
+                { label: 'تم التسليم', data: {{ homework_submissions|map(attribute='submitted_students')|list|tojson }}, backgroundColor: '#ffc107' },
+                { label: 'لم يتم التسليم', data: {{ homework_submissions|map(attribute='not_submitted')|list|tojson }}, backgroundColor: '#dc3545' }
+            ]
+        }
+    });
+
+    new Chart(document.getElementById('codesChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ codes_usage|map(attribute='subject_name')|list|tojson }},
+            datasets: [
+                { label: 'أكواد مستخدمة', data: {{ codes_usage|map(attribute='used_codes')|list|tojson }}, backgroundColor: '#6f42c1' },
+                { label: 'أكواد غير مستخدمة', data: {{ codes_usage|map(attribute='unused_codes')|list|tojson }}, backgroundColor: '#adb5bd' }
+            ]
+        }
+    });
+</script>
+{% endblock %}

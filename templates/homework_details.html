@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>تفاصيل الواجب: {{ homework.title }}</h2>
+    <p><strong>الوصف:</strong> {{ homework.description }}</p>
+    <p><strong> التسليم:</strong> {{ homework.due_date.strftime('%Y-%m-%d %H:%M') }}</p>
+
+    <div class="alert alert-info">
+        <p><strong>حالة التسليم:</strong> {{ status }}</p>
+        <p>{{ details|safe }}</p>
+    </div>
+
+    <a href="{{ url_for('subjects') }}" class="btn btn-secondary">العودة</a>
+</div>
+{% endblock %}

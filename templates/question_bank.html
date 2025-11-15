@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}بنك الأسئلة{% endblock %}
+
+{% block content %}
+
+<style>
+    body {
+        background-color: #f9f9f9;
+        direction: rtl;
+        text-align: right;
+    }
+</style>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">
+        <i class="fas fa-database text-primary me-2"></i>إدارة بنك الأسئلة
+    </h2>
+
+    <!-- شريط التنقل العلوي -->
+    <div class="d-flex justify-content-center gap-3 mb-4">
+        <button class="btn btn-success" onclick="showSection('addQuestion')">
+            <i class="fas fa-plus-circle me-2"></i>إضافة سؤال جديد
+        </button>
+        <button class="btn btn-info" onclick="showSection('questionsList')">
+            <i class="fas fa-list-alt me-2"></i>عرض الأسئلة
+        </button>
+    </div>
+
+    <!-- قسم إضافة سؤال جديد -->
+    <div id="addQuestion" class="section" style="display: block;">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <i class="fas fa-plus-circle me-2"></i>إضافة سؤال جديد
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <!-- الصف الدراسي -->
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="fas fa-graduation-cap me-2"></i>الصف الدراسي</label>
+                            <input type="text" name="grade" class="form-control" required>
+                        </div>
+
+                        <!-- نوع السؤال -->
+                        <div class="col-12">
+                            <label class="form-label"><i class="fas fa-question me-2"></i>نوع السؤال</label>
+                            <select class="form-select" name="question_type" id="question_type" onchange="toggleAnswerFields()">
+                                <option value="mcq">اختيار من متعدد</option>
+                                <option value="true_false">صح وخطأ</option>
+                            </select>
+                        </div>
+
+                        <!-- نص السؤال -->
+                        <div class="col-12">
+                            <label class="form-label"><i class="fas fa-pen me-2"></i>نص السؤال</label>
+                            <textarea name="question_text" class="form-control" rows="3" required></textarea>
+                        </div>
+
+                        <!-- خيارات MCQ -->
+                        <div class="col-12" id="mcq_answers">
+                            <div class="card border-primary">
+                                <div class="card-header bg-light">
+                                    <i class="fas fa-list-ul me-2"></i>خيارات الإجابة
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        {% for i in range(1, 5) %}
+                                        <div class="col-md-6">
+                                            <input type="text" name="option_{{ i }}" class="form-control" placeholder="الإجابة {{ i }}" required>
+                                        </div>
+                                        {% endfor %}
+                                        <div class="col-12">
+                                            <label class="form-label">الإجابة الصحيحة</label>
+                                            <select class="form-select" name="correct_option">
+                                                {% for i in range(1, 5) %}
+                                                <option value="{{ i }}">الاختيار {{ i }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- صح أو خطأ -->
+                        <div class="col-12" id="true_false_answer" style="display: none;">
+                            <div class="card border-info">
+                                <div class="card-header bg-light">
+                                    <i class="fas fa-check-circle me-2"></i>الإجابة الصحيحة
+                                </div>
+                                <div class="card-body">
+                                    <select class="form-select" name="correct_option_tf">
+                                        <option value="صح">صح</option>
+                                        <option value="خطأ">خطأ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>إضافة السؤال
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم عرض الأسئلة -->
+    <div id="questionsList" class="section" style="display: none;">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-table me-2"></i>الأسئلة المتوفرة
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>المادة</th>
+                            <th>الصف</th>
+                            <th>السؤال</th>
+                            <th>الإجابة الصحيحة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in questions %}
+                        <tr>
+                            <td>{{ question.subject_name }}</td>
+                            <td>{{ question.grade }}</td>
+                            <td>{{ question.question_text }}</td>
+                            <td>{{ question.correct_option }}</td>
+                            <td>
+<a href="{{ url_for('edit_question_bank', question_id=question.id) }}" class="btn btn-warning btn-sm">تعديل</a>
+                                <button class="btn btn-danger btn-sm delete-btn" data-question-id="{{ question.id }}">حذف</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- نافذة تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>تأكيد الحذف
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    سيتم حذف السؤال بشكل نهائي ولا يمكن استرجاعه!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>تراجع
+                </button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-2"></i>تأكيد الحذف
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة أدوات التلميح
+    const tooltips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                      .map(t => new bootstrap.Tooltip(t))
+
+    // معالجة الحذف
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const questionId = this.dataset.questionId
+            document.getElementById('deleteForm').action = `/delete_question_bank/${questionId}`
+            new bootstrap.Modal(document.getElementById('deleteModal')).show()
+        })
+    })
+
+    // تبديل الحقول
+    function toggleAnswerFields() {
+        const type = document.getElementById('question_type').value
+        const mcqSection = document.getElementById('mcq_answers')
+        const tfSection = document.getElementById('true_false_answer')
+
+        mcqSection.style.display = type === 'mcq' ? 'block' : 'none'
+        tfSection.style.display = type === 'true_false' ? 'block' : 'none'
+
+        // التحكم في الحقول المطلوبة
+        const mcqRequired = type === 'mcq'
+        mcqSection.querySelectorAll('input, select').forEach(el => el.required = mcqRequired)
+        tfSection.querySelectorAll('select').forEach(el => el.required = !mcqRequired)
+    }
+
+    // تهيئة أولية
+    toggleAnswerFields()
+    document.getElementById('question_type').addEventListener('change', toggleAnswerFields)
+})
+</script>
+<script>
+// عرض أو إخفاء الحقول حسب نوع السؤال
+function toggleAnswerFields() {
+    const type = document.getElementById('question_type').value;
+    document.getElementById('mcq_answers').style.display = type === 'mcq' ? 'block' : 'none';
+    document.getElementById('true_false_answer').style.display = type === 'true_false' ? 'block' : 'none';
+}
+toggleAnswerFields();
+
+// إظهار قسم وإخفاء الباقي
+function showSection(sectionId) {
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => {
+        section.style.display = (section.id === sectionId) ? 'block' : 'none';
+    });
+}
+
+</script>
+
+
+
+{% endblock %}

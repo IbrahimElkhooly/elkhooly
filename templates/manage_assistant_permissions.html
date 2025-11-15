@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>إدارة صلاحيات المساعد</h2>
+
+    <form action="{{ url_for('update_assistant_permissions', assistant_id=assistant_id, subject_id=subject_id) }}" method="POST">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_add_homework" id="can_add_homework" {% if permissions.can_add_homework %}checked{% endif %}>
+            <label class="form-check-label" for="can_add_homework">إضافة واجب</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_view_submissions" id="can_view_submissions" {% if permissions.can_view_submissions %}checked{% endif %}>
+            <label class="form-check-label" for="can_view_submissions">عرض تسليمات الواجب</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_view_progress" id="can_view_progress" {% if permissions.can_view_progress %}checked{% endif %}>
+            <label class="form-check-label" for="can_view_progress">تقرير تقدم الطلاب</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_manage_students" id="can_manage_students" {% if permissions.can_manage_students %}checked{% endif %}>
+            <label class="form-check-label" for="can_manage_students">الطلاب المسجلين</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_edit_exams" id="can_edit_exams" {% if permissions.can_edit_exams %}checked{% endif %}>
+            <label class="form-check-label" for="can_edit_exams">تعديل الامتحانات</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_add_exam" id="can_add_exam" {% if permissions.can_add_exam %}checked{% endif %}>
+            <label class="form-check-label" for="can_add_exam">إضافة امتحان</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="can_upload_files" id="can_upload_files" {% if permissions.can_upload_files %}checked{% endif %}>
+            <label class="form-check-label" for="can_upload_files">رفع الملفات</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">حفظ التعديلات</button>
+    </form>
+</div>
+{% endblock %}

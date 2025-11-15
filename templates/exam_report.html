@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 تقرير الامتحان: {{ exam.exam_name }} - {{ exam.subject_name }}</h2>
+
+<!-- ✅ التابات -->
+<ul class="nav nav-tabs" id="examTabs">
+    <li class="nav-item">
+        <a class="nav-link active" id="exam-details-tab" data-toggle="tab" href="#exam-details">📋 تفاصيل الامتحان</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="student-results-tab" data-toggle="tab" href="#student-results">🎓 نتائج الطلاب</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="question-analysis-tab" data-toggle="tab" href="#question-analysis">📊 تحليل الأسئلة</a>
+    </li>
+</ul>
+
+<div class="tab-content mt-3">
+    <!-- ✅ تفاصيل الامتحان -->
+    <div class="tab-pane fade show active" id="exam-details">
+        <h3>📋 تفاصيل الامتحان</h3>
+        <ul>
+            <li><strong>اسم الامتحان:</strong> {{ exam.exam_name }}</li>
+            <li><strong>المادة:</strong> {{ exam.subject_name }}</li>
+        </ul>
+    </div>
+
+    <!-- ✅ نتائج الطلاب -->
+    <div class="tab-pane fade" id="student-results">
+        <h3>🎓 نتائج الطلاب</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                   <th>اسم الطالب</th>
+                    <th>الدرجة</th>
+                    <th>إجمالي الأسئلة</th>
+                    <th>تاريخ التصحيح</th>
+                    <th>وقت البدء</th>
+                    <th>وقت الانتهاء</th>
+                    <th>المدة</th>
+                </tr>
+            </thead>
+            <tbody>
+    {% for student in students %}
+                <tr>
+                     <td>{{ student.username }}</td>
+                    <td>{{ student.score }}</td>
+                    <td>{{ student.total_questions }}</td>
+                    <td>{{ student.grade_date }}</td>
+                    <td>{{ student.start_time }}</td>
+                    <td>{{ student.end_time }}</td>
+                    <td>{{ student.duration }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ✅ تحليل الأسئلة -->
+    <div class="tab-pane fade" id="question-analysis">
+        <h3>📊 تحليل الأسئلة</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                                <th>السؤال</th>
+                    <th>عدد الإجابات</th>
+                    <th>الإجابات الصحيحة</th>
+                    <th>الإجابات الخاطئة</th>
+                    <th>نسبة الدقة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for question in questions_analysis %}
+    <tr>
+        <td>{{ question.question_text }}</td>
+        <td>{{ question.total_answers }}</td>
+        <td>{{ question.correct_answers }}</td>
+        <td>{{ question.wrong_answers }}</td>
+        <td>{{ question.accuracy_percentage }}%</td>
+    </tr>
+    {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<a href="{{ url_for('detailed_report', exam_id=exam_id) }}" class="btn btn-primary">تقرير مفصل لكل طالب</a>
+
+<!-- ✅ إضافة مكتبة JavaScript لتفعيل التابات -->
+<script>
+
+
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let tabs = document.querySelectorAll(".nav-link");
+        tabs.forEach(tab => {
+            tab.addEventListener("click", function(event) {
+                event.preventDefault();
+                let activeTab = document.querySelector(".tab-pane.active");
+                let activeNav = document.querySelector(".nav-link.active");
+
+                activeTab.classList.remove("show", "active");
+                activeNav.classList.remove("active");
+
+                let target = document.querySelector(this.getAttribute("href"));
+                this.classList.add("active");
+                target.classList.add("show", "active");
+            });
+        });
+    });
+</script>
+
+{% endblock %}

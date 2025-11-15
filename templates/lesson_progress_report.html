@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير التقدم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="card shadow-lg p-4">
+            <h2 class="text-center mb-4">
+                <i class="fas fa-chart-line text-primary"></i> تقرير التقدم لدرس "{{ lesson.title }}"
+            </h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-center">
+                    <thead class="table-primary">
+                        <tr>
+                            <th><i class="fas fa-clock"></i> آخر تحديث</th>
+                            <th><i class="fas fa-check-circle"></i> اكتمل</th>
+                            <th><i class="fas fa-tasks"></i> التقدم</th>
+                            <th><i class="fas fa-user"></i> الطالب</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in progress_data %}
+                        <tr>
+                            <td class="text-muted">{{ row.last_updated }}</td>
+                            <td>
+                                {% if row.completed %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> نعم</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="fas fa-times"></i> لا</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar
+                                        {% if row.progress == 100 %} bg-success
+                                        {% elif row.progress >= 50 %} bg-info
+                                        {% else %} bg-warning {% endif %}"
+                                        role="progressbar"
+                                        style="width: {{ row.progress }}%;"
+                                        aria-valuenow="{{ row.progress }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100">
+                                        {{ row.progress }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fw-bold">{{ row.username }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

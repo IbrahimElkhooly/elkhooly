@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة أولياء الأمور</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .subject-card {
+            transition: transform 0.2s;
+        }
+        .subject-card:hover {
+            transform: translateY(-5px);
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        {% if error %}
+        <div class="alert alert-danger text-center">{{ error }}</div>
+        {% endif %}
+
+        <h2 class="text-center">متابعة ولي الامر</h2>
+
+        <form method="POST" class="mb-4 text-center">
+            <div class="input-group w-50 mx-auto">
+                <input type="text" name="parent_code" class="form-control" placeholder="🔍 ادخل كود  الطالب " required>
+                <button type="submit" class="btn btn-primary">بحث</button>
+            </div>
+        </form>
+
+        {% if student %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">معلومات الطالب</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>رقم الطالب:</strong> {{ student.id }}</p>
+                <p><strong>اسم الطالب:</strong> {{ student.username }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <ul class="nav nav-tabs mb-3" id="reportTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab">📊 إحصائيات الأداء</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="homework-tab" data-bs-toggle="tab" data-bs-target="#homework" type="button" role="tab">📖 الواجبات المنزلية</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="exams-tab" data-bs-toggle="tab" data-bs-target="#exams" type="button" role="tab">📝 نتائج الامتحانات</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="reportTabsContent">
+            <div class="tab-pane fade show active" id="stats" role="tabpanel">
+                {% if stats %}
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h4 class="mb-0">إحصائيات الأداء</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for subject_id, data in stats.items() %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card subject-card h-100">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">{{ data.subject_name }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <span class="d-block mb-2">الامتحانات: {{ data.exam_percentage }}%</span>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ data.exam_percentage }}%"></div>
+                                        </div>
+                                        <span class="d-block mb-2">الواجبات: {{ data.homework_percentage }}%</span>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ data.homework_percentage }}%"></div>
+                                        </div>
+                                        <div class="bg-light p-3 rounded text-center">
+                                            <h6 class="mb-0">المعدل النهائي</h6>
+                                            <div class="display-4 text-success">{{ data.final_grade }}%</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+<div class="tab-pane fade" id="homework" role="tabpanel">
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">الواجبات المنزلية</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>اسم المادة</th>
+                            <th>اسم الواجب</th>
+                            <th>الدرجة</th>
+                            <th>النسبة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hw in homeworks %}
+                        <tr>
+                            <td>{{ hw.subject_name }}</td>
+                            <td>{{ hw.homework_name }}</td>
+                            <td>{{ hw.homework_score | default(0) }}/10</td>
+                            <td>{{ ((hw.homework_score | default(0)) / 10) * 100|round(2) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <div class="tab-pane fade" id="exams" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">نتائج الامتحانات</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>المادة</th>
+                                        <th>اسم الامتحان</th>
+                                        <th>الدرجة</th>
+                                        <th>الإجمالي</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for grade in grades %}
+                                    <tr>
+                                        <td>{{ grade.name }}</td>
+                                        <td>{{ grade.exam_name }}</td>
+                                        <td>{{ grade.score }}</td>
+                                        <td>{{ grade.total_questions }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

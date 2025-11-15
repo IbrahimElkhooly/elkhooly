@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+
+    /* تأثير عند تمرير الفأرة */
+    .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+    .card:hover {
+        transform: scale(1.02);
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* تحريك العنوان عند تحميل الصفحة */
+    .card-header h5 {
+        animation: fadeInDown 0.8s ease-in-out;
+    }
+
+    /* تحريك العناصر عند الظهور */
+    .form-control, .form-select, .btn {
+        animation: fadeInUp 0.6s ease-in-out;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="card shadow-lg border-0 rounded-3 mt-4">
+    <div class="btn btn-success w-100 shadow-sm py-2 fw-bold" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+        <h4 class="mb-0">➕ إضافة سؤال جديد للتقييم</h4>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" action="{{ url_for('add_evaluation_question', subject_id=subject.id) }}">
+            <div class="mb-3">
+                <label for="question_text" class="form-label fw-bold">📝 نص السؤال:</label>
+                <input type="text" id="question_text" name="question_text" required class="form-control shadow-sm" placeholder="اكتب السؤال هنا...">
+            </div>
+
+            <div class="mb-3">
+                <label for="question_type" class="form-label fw-bold">📌 نوع السؤال:</label>
+                <select id="question_type" name="question_type" class="form-select shadow-sm">
+                    <option value="rating">⭐ تقييم (1-5)</option>
+                    <option value="text">✍ إجابة نصية</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 shadow-sm py-2 fw-bold">
+                ➕ إضافة السؤال
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

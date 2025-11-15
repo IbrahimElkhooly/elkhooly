@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <div class="text-center">
+            <!-- صورة البروفايل بشكل دائرة -->
+            <div class="profile-pic-wrapper">
+                <img src="{{ url_for('static', filename='profile_pictures/' + account.profile_picture) }}"
+                     alt="صورة الملف الشخصي"
+                     class="rounded-circle shadow-sm"
+                     width="150" height="150"
+                     style="object-fit: cover;">
+            </div>
+        </div>
+
+        <h2 class="text-center mt-3 mb-4">تعديل الملف الشخصي</h2>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group position-relative">
+                <label for="username">
+                    <i class="fas fa-user-edit"></i> اسم المستخدم:
+                </label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ account.username }}" required>
+            </div>
+
+            <div class="form-group position-relative">
+                <label for="email">
+                    <i class="fas fa-envelope"></i> البريد الإلكتروني:
+                </label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ account.email }}" required>
+            </div>
+
+            <div class="form-group position-relative">
+                <label for="password">
+                    <i class="fas fa-lock"></i> كلمة المرور الجديدة (اختياري):
+                </label>
+                <input type="password" class="form-control" id="password" name="password">
+            </div>
+
+            <div class="form-group position-relative">
+                <label for="profile_picture">
+                    <i class="fas fa-image"></i> صورة الملف الشخصي الجديدة:
+                </label>
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture">
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary mt-3">
+                    <i class="fas fa-save"></i> حفظ التغييرات
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- روابط أيقونات FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    .profile-pic-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    .profile-pic-wrapper img {
+        border: 3px solid #007bff;
+    }
+    .form-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .form-group i {
+        color: #007bff;
+        margin-left: 5px;
+    }
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">📢 الإشعارات</h2>
+
+    <!-- فلاتر أنواع الإشعارات -->
+    <div class="filters mb-3">
+        <a href="{{ url_for('notifications') }}" class="filter-btn {% if not filter %}active{% endif %}">الكل</a>
+        <a href="{{ url_for('notifications', filter='exam') }}" class="filter-btn {% if filter == 'exam' %}active{% endif %}">الامتحانات</a>
+        <a href="{{ url_for('notifications', filter='homework') }}" class="filter-btn {% if filter == 'homework' %}active{% endif %}">الواجبات</a>
+        <a href="{{ url_for('notifications', filter='subject_file') }}" class="filter-btn {% if filter == 'subject_file' %}active{% endif %}">الملفات</a>
+        <a href="{{ url_for('notifications', filter='friend_request') }}" class="filter-btn {% if filter == 'friend_request' %}active{% endif %}">طلبات الصداقة</a>
+    </div>
+
+    {% if notifications %}
+        <ul class="notifications-list">
+            {% for notification in notifications %}
+                <li class="notification-item">
+                    <div class="notification-icon">
+                        {% if notification.notification_type == 'exam' %}
+                            📝
+                        {% elif notification.notification_type == 'homework' %}
+                            📚
+                        {% elif notification.notification_type == 'subject_file' %}
+                            📁
+                        {% elif notification.notification_type == 'friend_request' or notification.notification_type == 'friend_request_accept' %}
+                            👥
+                        {% else %}
+                            🔔
+                        {% endif %}
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-text">
+                            {% if notification.notification_type == 'exam' %}
+                                <a href="{{ url_for('start_exam', exam_id=notification.related_id) }}">
+                                    {{ notification.message }}
+                                </a>
+                            {% elif notification.notification_type == 'homework' %}
+                                <a href="{{ url_for('homework_submissions', homework_id=notification.related_id) }}">
+                                    {{ notification.message }}
+                                </a>
+                            {% elif notification.notification_type == 'subject_file' %}
+                                <a href="{{ url_for('subject_page', subject_id=notification.related_id) }}">
+                                    {{ notification.message }}
+                                </a>
+                            {% elif notification.notification_type == 'friend_request' or notification.notification_type == 'friend_request_accept' %}
+                                <a href="{{ url_for('friend_requests') }}">
+                                    {{ notification.message }}
+                                </a>
+                            {% else %}
+                                {{ notification.message }}
+                            {% endif %}
+                        </div>
+                        <div class="notification-date">
+                            {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center text-muted">لا توجد إشعارات حالياً.</p>
+    {% endif %}
+</div>
+
+<style>
+.filters {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.filter-btn {
+    display: inline-block;
+    padding: 7px 15px;
+    margin: 0 5px;
+    background-color: #f1f1f1;
+    color: #333;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.notifications-list {
+    list-style: none;
+    padding: 0;
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+}
+
+.notification-item:hover {
+    background-color: #f9f9f9;
+}
+
+.notification-icon {
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-text a {
+    font-weight: bold;
+    color: #007bff;
+    text-decoration: none;
+     font-size:32px;
+}
+
+.notification-text a:hover {
+    text-decoration: underline;
+
+}
+
+.notification-date {
+    font-size: 12px;
+    color: #888;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}

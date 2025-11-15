@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}تعديل سؤال البنك{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- العنوان الرئيسي مع أيقونة -->
+    <div class="d-flex align-items-center mb-4">
+        <i class="fas fa-edit fa-2x text-warning me-3"></i>
+        <h2 class="mb-0">تعديل سؤال في بنك الأسئلة</h2>
+    </div>
+
+    <!-- بطاقة التعديل -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-warning text-white">
+            <i class="fas fa-pencil-alt me-2"></i>نموذج التعديل
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <!-- حقل المادة -->
+                <div class="form-group mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-book me-2"></i>المادة
+                    </label>
+                    <select class="form-select" >
+                        <option>{{ question.subject_name }}</option>
+                    </select>
+                </div>
+
+                <!-- حقل الصف الدراسي -->
+                <div class="form-group mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-graduation-cap me-2"></i>الصف الدراسي
+                    </label>
+                    <input type="text" class="form-control" value="{{ question.grade }}" >
+                </div>
+
+                <!-- نوع السؤال -->
+                <div class="form-group mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-question-circle me-2"></i>نوع السؤال
+                    </label>
+                    <select class="form-select" >
+                        <option>
+                            {% if question.question_type == 'mcq' %}
+                                اختيار من متعدد
+                            {% else %}
+                                صح وخطأ
+                            {% endif %}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- نص السؤال -->
+                <div class="form-group mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-comment-alt me-2"></i>نص السؤال
+                    </label>
+                    <textarea name="question_text" class="form-control" rows="3" required>{{ question.question_text }}</textarea>
+                </div>
+
+                <!-- إجابات MCQ -->
+                {% if question.question_type == 'mcq' %}
+                <div class="card border-primary mb-4">
+                    <div class="card-header bg-light">
+                        <i class="fas fa-list-ol me-2"></i>خيارات الإجابة
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" value="{{ question.option_1 }}" >
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" value="{{ question.option_2 }}" >
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" value="{{ question.option_3 }}" >
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" value="{{ question.option_4 }}" >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- الإجابة الصحيحة -->
+                <div class="form-group mb-4">
+                    <label class="form-label">
+                        <i class="fas fa-check-circle me-2"></i>الإجابة الصحيحة
+                    </label>
+                    {% if question.question_type == 'mcq' %}
+                        <select class="form-select" name="correct_option">
+    <option value="1" {% if question.correct_option == question.option_1 %}selected{% endif %}>الاختيار الأول</option>
+    <option value="2" {% if question.correct_option == question.option_2 %}selected{% endif %}>الاختيار الثاني</option>
+    <option value="3" {% if question.correct_option == question.option_3 %}selected{% endif %}>الاختيار الثالث</option>
+    <option value="4" {% if question.correct_option == question.option_4 %}selected{% endif %}>الاختيار الرابع</option>
+</select>
+
+                    {% else %}
+                        <select class="form-select" name="correct_option">
+                            <option value="صح" {% if question.correct_option =='صح' %}selected{% endif %}>صح</option>
+                            <option value="خطأ" {% if question.correct_option =='خطأ' %}selected{% endif %}>خطأ</option>
+                        </select>
+                    {% endif %}
+                </div>
+
+                <!-- أزرار التحكم -->
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{{ url_for('question_bank') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save me-2"></i>حفظ التغييرات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+      body {
+        background-color: #f9f9f9;
+        direction: rtl;
+        text-align: right;
+    }
+    .card {
+        border-radius: 15px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #444;
+    }
+
+    select:disabled,
+    input:disabled {
+        background-color: #f8f9fa;
+        opacity: 1;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // التأكد من تطابق الإجابة الصحيحة مع القيمة الحالية
+    const correctOption = "{{ question.correct_option }}";
+    const selectElement = document.querySelector('select[name="correct_option"]');
+
+    if (selectElement) {
+        Array.from(selectElement.options).forEach(option => {
+            if (option.value === correctOption) {
+                option.selected = true;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

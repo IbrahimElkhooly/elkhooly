@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary">📝 تعديل الدرس</h2>
+
+    <form action="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" method="POST" class="bg-light p-4 rounded shadow">
+        <!-- قسم المعلومات الأساسية -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-8">
+                <div class="form-group mb-4">
+                    <label for="title" class="form-label fw-bold">🏷️ عنوان الدرس</label>
+                    <input type="text" id="title" name="title"
+                           class="form-control form-control-lg"
+                           value="{{ lesson.title }}" required>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="content" class="form-label fw-bold">📄 محتوى الدرس</label>
+                    <textarea id="content" name="content"
+                              class="form-control"
+                              rows="5" required>{{ lesson.content }}</textarea>
+                </div>
+<input type="hidden" id="num_questions" name="num_questions" value="{{ quiz_data|length }}">
+
+                <div class="form-group mb-4">
+                    <label for="video_url" class="form-label fw-bold">🎥 رابط الفيديو (اختياري)</label>
+                    <input type="url" id="video_url" name="video_url"
+                           class="form-control"
+                           placeholder="https://www.youtube.com/watch?v=..."
+                           value="{{ lesson.video_url }}">
+                    <small class="text-muted">مثال: https://www.youtube.com/watch?v=xxxx</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم الأسئلة -->
+        <h4 class="border-bottom pb-2 mb-4">❓ الأسئلة التفاعلية</h4>
+
+        {% for i, question in enumerate(quiz_data) %}
+        <div class="question-block bg-white p-4 mb-4 rounded border">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label class="form-label fw-bold">السؤال {{ i+1 }}</label>
+                        <input type="text" name="question_{{ i }}"
+                               class="form-control"
+                               value="{{ question.question }}" required>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label fw-bold">📝 نوع السؤال</label>
+                        <select name="type_{{ i }}" class="form-select">
+                            <option value="text" {% if question.type =='text' %}selected{% endif %}>نص</option>
+                            <option value="mcq" {% if question.type =='mcq' %}selected{% endif %}>اختيار من متعدد</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label fw-bold">✅ الإجابة الصحيحة</label>
+                        <input type="text" name="correct_{{ i }}"
+                               class="form-control"
+                               value="{{ question.correct_answer }}" required>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label fw-bold">💬 التغذية الراجعة</label>
+                        <input type="text" name="feedback_{{ i }}"
+                               class="form-control"
+                               value="{{ question.feedback }}"
+                               placeholder="(اختياري)">
+                    </div>
+                </div>
+
+                {% if question.type == "mcq" %}
+                <div class="col-12">
+                    <div class="form-group">
+                        <label class="form-label fw-bold">🔘 الاختيارات</label>
+                        <div class="row g-2">
+                            {% for j in range(4) %}
+                            <div class="col-md-6">
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">{{ loop.index }}</span>
+                                    <input type="text"
+                                           name="option_{{ i }}_{{ j+1 }}"
+                                           class="form-control"
+                                           value="{{ question.options[j] if question.options|length > j else '' }}">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- الأزرار -->
+        <div class="d-flex gap-3 mt-5">
+            <button type="submit" class="btn btn-lg btn-success">
+                💾 حفظ التعديلات
+            </button>
+            <a href="{{ url_for('lesson_details', lesson_id=lesson.id) }}"
+               class="btn btn-lg btn-outline-secondary">
+                ❌ إلغاء
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .question-block {
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .question-block:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .form-label {
+        color: #2c3e50;
+    }
+
+    .input-group-text {
+        background: #e9ecef;
+        min-width: 40px;
+        justify-content: center;
+    }
+</style>
+{% endblock %}

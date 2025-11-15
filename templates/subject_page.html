@@ -1,0 +1,851 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg p-4">
+        <h2 class="text-center text-primary">
+            <i class="fas fa-book"></i> {{ subject.name }}
+        </h2>
+{% if subject.evaluation_status %}
+    <a href="{{ url_for('evaluate_subject', subject_id=subject.id) }}" class="btn btn-primary">
+        تقييم المادة
+    </a>
+{% else %}
+    <button class="btn btn-secondary" disabled>التقييم غير متاح</button>
+{% endif %}
+<style>
+    :root {
+        --primary-color: #1877f2;
+        --hover-bg: #e7f3ff;
+    }
+
+    .dashboard-container {
+        direction: rtl;
+        background: #f0f2f5;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .dashboard-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: transform 0.3s, background-color 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .dashboard-card i {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-card.subjects { background-color: #ffeb3b; }
+    .dashboard-card.add-subject { background-color: #4caf50; color: white; }
+    .dashboard-card.admin-panel { background-color: #f44336; color: white; }
+    .dashboard-card.grades { background-color: #ff9800; color: white; }
+    .dashboard-card.teacher-grades { background-color: #9c27b0; color: white; }
+    .dashboard-card.bank { background-color: #808080; color: white; }
+    .dashboard-card.analytics { background-color: #00bcd4; color: white; } /* لون مميز للكارت الجديد */
+
+    .dashboard-card:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+    .messageBox {
+  width: fit-content;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2d2d2d;
+  padding: 0 15px;
+  border-radius: 10px;
+  border: 1px solid rgb(63, 63, 63);
+}
+.messageBox:focus-within {
+  border: 1px solid rgb(110, 110, 110);
+}
+.fileUploadWrapper {
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#file {
+  display: none;
+}
+.fileUploadWrapper label {
+  cursor: pointer;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.fileUploadWrapper label svg {
+  height: 18px;
+}
+.fileUploadWrapper label svg path {
+  transition: all 0.3s;
+}
+.fileUploadWrapper label svg circle {
+  transition: all 0.3s;
+}
+.fileUploadWrapper label:hover svg path {
+  stroke: #fff;
+}
+.fileUploadWrapper label:hover svg circle {
+  stroke: #fff;
+  fill: #3c3c3c;
+}
+.fileUploadWrapper label:hover .tooltip {
+  display: block;
+  opacity: 1;
+}
+.tooltip {
+  position: absolute;
+  top: -40px;
+  display: none;
+  opacity: 0;
+  color: white;
+  font-size: 10px;
+  text-wrap: nowrap;
+  background-color: #000;
+  padding: 6px 10px;
+  border: 1px solid #3c3c3c;
+  border-radius: 5px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.596);
+  transition: all 0.3s;
+}
+#messageInput {
+  width: 200px;
+  height: 100%;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  padding-left: 10px;
+  color: white;
+}
+#messageInput:focus ~ #sendButton svg path,
+#messageInput:valid ~ #sendButton svg path {
+  fill: #3c3c3c;
+  stroke: white;
+}
+
+#sendButton {
+  width: fit-content;
+  height: 100%;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#sendButton svg {
+  height: 18px;
+  transition: all 0.3s;
+}
+#sendButton svg path {
+  transition: all 0.3s;
+}
+#sendButton:hover svg path {
+  fill: #3c3c3c;
+  stroke: white;
+}
+</style>
+
+        <p><strong><i class="fas fa-chalkboard-teacher"></i> المعلم:</strong> {{ subject.teacher }}</p>
+        <p><strong><i class="fas fa-info-circle"></i> وصف المادة:</strong> {{ subject.description }}</p>
+    </div>
+
+  <!-- داخل قائمة التبويبات الرئيسية -->
+<ul class="nav nav-tabs mt-4" id="subjectTabs" role="tablist">
+    <!-- التبويبات الحالية -->
+    <li class="nav-item">
+        <a class="nav-link " id="files-tab" data-bs-toggle="tab" href="#files" role="tab">📂 الملفات</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="exams-tab" data-bs-toggle="tab" href="#exams" role="tab">📑 الامتحانات</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="homeworks-tab" data-bs-toggle="tab" href="#homeworks" role="tab">📝 الواجبات</a>
+    </li>
+
+    <!-- التبويب الجديد -->
+    <li class="nav-item">
+        <a class="nav-link" id="lessons-tab" data-bs-toggle="tab" href="#lessons" role="tab">📚 الدروس</a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link" id="communication-tab" data-bs-toggle="tab" href="#communication" role="tab">💬 تواصل</a>
+    </li>
+    {% if session.get('role') in ['assistant', 'teacher'] %}
+    <li class="nav-item">
+        <a class="nav-link" id="manage-tab" data-bs-toggle="tab" href="#manage" role="tab">⚙️ إدارة المادة</a>
+    </li>
+    {% endif %}
+</ul>
+    <div class="tab-content p-3 border border-top-0">
+
+        <!-- تبويب التواصل -->
+<div class="tab-pane fade" id="communication" role="tabpanel">
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item">
+            <a class="nav-link active" id="summary-tab" data-bs-toggle="tab" href="#summary" role="tab">📢 موجز</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="qa-tab" data-bs-toggle="tab" href="#qa" role="tab">❓ سؤال وجواب</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="chat-tab" data-bs-toggle="tab" href="#chat" role="tab">💬 شات جماعي</a>
+        </li>
+    </ul>
+
+    <!-- محتوى التبويبات -->
+    <div class="tab-content">
+        <!-- تبويب الموجز -->
+        <div class="tab-pane fade show active" id="summary" role="tabpanel">
+            <h4>📢 موجز الإعلانات</h4>
+
+            {% if session.get('role') == 'teacher' %}
+            <form action="{{ url_for('add_announcement', subject_id=subject.id) }}" method="POST">
+                <textarea class="form-control" name="content" placeholder="اكتب الإعلان..." required></textarea>
+                <button type="submit" class="btn btn-success mt-2">إرسال</button>
+            </form>
+            {% endif %}
+
+            <h4 class="mt-4">📢 الإعلانات السابقة</h4>
+            {% if announcements %}
+            <ul class="list-group">
+                {% for ann in announcements %}
+                <li class="list-group-item">
+                    <strong>{{ ann.teacher_name }}:</strong> {{ ann.content }}
+                    <small class="text-muted d-block">
+                        {{ ann.created_at.strftime('%Y-%m-%d %H:%M') if ann.created_at else 'تاريخ غير متوفر' }}
+                    </small>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="alert alert-info mt-2">لا توجد إعلانات حتى الآن.</div>
+            {% endif %}
+        </div>
+
+        <!-- تبويب الأسئلة والأجوبة -->
+        <div class="tab-pane fade" id="qa" role="tabpanel">
+            <h4>❓ الأسئلة والأجوبة</h4>
+           <div class="messageBox">
+    <div class="fileUploadWrapper">
+        <label for="file">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 337 337">
+                <circle stroke-width="20" stroke="#6c6c6c" fill="none" r="158.5" cy="168.5" cx="168.5"></circle>
+                <path stroke-linecap="round" stroke-width="25" stroke="#6c6c6c" d="M167.759 79V259"></path>
+                <path stroke-linecap="round" stroke-width="25" stroke="#6c6c6c" d="M79 167.138H259"></path>
+            </svg>
+            <span class="tooltip">إضافة صورة</span>
+        </label>
+        <input type="file" id="file" name="file" />
+    </div>
+    <form action="{{ url_for('ask_question', subject_id=subject.id) }}" method="POST" style="display: flex; width: 100%;">
+        <input required name="question" id="messageInput" placeholder="اكتب سؤالك..." type="text">
+        <button type="submit" id="sendButton">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 664 663">
+                <path fill="none" d="M646.293 331.888L17.7538 17.6187L155.245 331.888M646.293 331.888L17.753 646.157L155.245 331.888M646.293 331.888L318.735 330.228L155.245 331.888"></path>
+                <path stroke-linejoin="round" stroke-linecap="round" stroke-width="33.67" stroke="#6c6c6c" d="M646.293 331.888L17.7538 17.6187L155.245 331.888M646.293 331.888L17.753 646.157L155.245 331.888M646.293 331.888L318.735 330.228L155.245 331.888"></path>
+            </svg>
+        </button>
+    </form>
+</div>
+
+            <h4 class="mt-4">📩 الأسئلة المرسلة من الطلاب</h4>
+            {% if questions %}
+            <ul class="list-group">
+                {% for q in questions %}
+                    {% if session.get('role') == 'teacher' or session.get('id') == q.student_id or q.is_visible %}
+                    <li class="list-group-item">
+                        <strong>{{ q.username }}:</strong> {{ q.question }}
+                        {% if q.answer %}
+                        <p><strong>👨‍🏫 رد المعلم:</strong> {{ q.answer }}</p>
+                        {% endif %}
+                        {% if session.get('role') == 'teacher' %}
+                        <form action="{{ url_for('answer_question', question_id=q.id) }}" method="POST" class="mt-2">
+                            <input type="text" class="form-control" name="answer" placeholder="اكتب الرد..." required>
+                            <button type="submit" class="btn btn-primary mt-1">💬 الرد</button>
+                        </form>
+                        <form action="{{ url_for('toggle_question_visibility', question_id=q.id) }}" method="POST" class="mt-2">
+                            <button type="submit" class="btn btn-warning">
+                                {% if q.is_visible %}👁️ إخفاء عن الجميع{% else %}👁️‍🗨️ إظهار للجميع{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="alert alert-info mt-2">لا توجد أسئلة حتى الآن.</div>
+            {% endif %}
+        </div>
+
+        <!-- تبويب الشات الجماعي -->
+        <div class="tab-pane fade" id="chat" role="tabpanel">
+            <h4>💬 الشات الجماعي</h4>
+            <div id="chat-messages" class="border p-3 bg-light" style="height: 300px; overflow-y: auto;">
+                <div class="alert alert-info">لا توجد رسائل بعد.</div>
+            </div>
+            <form id="chat-form">
+                <textarea class="form-control mt-2" name="message" placeholder="اكتب رسالتك..." required></textarea>
+                <button type="submit" class="btn btn-success mt-2">إرسال</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+        <!-- محتوى تبويب الدروس -->
+<div class="tab-pane fade" id="lessons" role="tabpanel">
+    <div class="card shadow p-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0"><i class="fas fa-book-open me-2"></i>الدروس التعليمية</h4>
+            {% if session.get('role') == 'teacher' %}
+            <a href="{{ url_for('add_lesson', subject_id=subject.id) }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>إضافة درس
+            </a>
+            {% endif %}
+        </div>
+
+        {% if lessons %}
+        <div class="list-group">
+            {% for lesson in lessons %}
+            <div class="list-group-item mb-3 rounded shadow-sm">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="w-75">
+                        <h5 class="text-primary">{{ lesson.title }}</h5>
+                        <p class="text-muted">{{ lesson.content|truncate(150) }}</p>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ url_for('lesson_details', lesson_id=lesson.id) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>عرض التفاصيل
+                        </a>
+                        <a href="{{ url_for('lesson_progress_report', lesson_id=lesson.id) }}"
+                           class="btn btn-sm btn-outline-info">
+                            <i class="fas fa-chart-line me-2"></i>التقدم
+                        </a>
+                        {% if session.get('role') == 'teacher' %}
+                        <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}"
+                           class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-edit me-2"></i>تعديل
+                        </a>
+                        <form action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}" method="POST"
+                              class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('هل أنت متأكد من حذف هذا الدرس؟');">
+                                <i class="fas fa-trash me-2"></i>حذف
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info mt-2">لا توجد دروس متاحة حالياً</div>
+        {% endif %}
+    </div>
+</div>
+
+        <!-- تبويب الملفات -->
+<div class="tab-pane fade show active" id="files" role="tabpanel">
+            {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_upload_files) %}
+            <div class="card shadow p-3 mb-3">
+                <h4 class="text-success"><i class="fas fa-upload"></i> رفع الملفات والمحتوى</h4>
+                <form action="{{ url_for('upload_file', subject_id=subject.id) }}" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" class="form-control" required>
+                    <button type="submit" class="btn btn-primary mt-2">رفع الملف</button>
+                </form>
+            </div>
+            {% endif %}
+
+            <div class="card shadow p-3">
+                <h4><i class="fas fa-folder-open"></i> الملفات المرفوعة</h4>
+                {% if files %}
+                <div class="list-group">
+                    {% for file in files %}
+                    <div class="list-group-item">
+                        {% if file.file_type == 'video' %}
+                        <div class="video-container">
+                            <video controls width="100%">
+                                <source src="{{ url_for('static', filename='uploads/' + file.filename) }}" type="video/{{ file.extension }}">
+                                متصفحك لا يدعم تشغيل الفيديو.
+                            </video>
+                        </div>
+                        {% else %}
+                        <a href="{{ url_for('static', filename='uploads/' + file.filename) }}" target="_blank" class="text-decoration-none">
+                            <i class="fas fa-file-alt me-2"></i>{{ file.filename }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info mt-2">لا توجد ملفات مرفوعة حتى الآن</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- تبويب الامتحانات -->
+<div class="tab-pane fade" id="exams" role="tabpanel">
+    <div class="card shadow-lg p-4">
+        <h4 class="mb-3 text-primary"><i class="fas fa-tasks"></i> الامتحانات</h4>
+
+        <!-- ✅ زر إضافة امتحان للمدرسين والمساعدين -->
+        {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_add_exam) %}
+        <a href="{{ url_for('add_exam', subject_id=subject.id) }}" class="btn btn-success mb-3">
+            <i class="fas fa-plus-circle"></i> إضافة امتحان جديد
+        </a>
+        <a href="{{ url_for('question_bank', subject_id=subject.id) }}" class="btn btn-primary">
+    <i class="fas fa-database"></i> بنك الأسئلة
+</a>
+
+        {% endif %}
+
+        {% if exams %}
+        <div class="list-group">
+            {% for exam in exams %}
+            <div class="list-group-item border rounded shadow-sm mb-3 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <!-- ✅ اسم الامتحان مع زر البدء -->
+                        <h5 class="text-dark">
+                            <a href="{{ url_for('take_exam', exam_id=exam.id) }}" class="text-decoration-none">
+                                <i class="fas fa-edit"></i> {{ exam.exam_name }}
+                            </a>
+                            <a href="{{ url_for('start_exam', exam_id=exam.id) }}" class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-play"></i> ابدأ الامتحان
+                            </a>
+                        </h5>
+
+                        <!-- ✅ معلومات الامتحان مع خلفية ملونة -->
+                        <div class="bg-light border rounded p-3 mt-3">
+                            <p class="mb-2 text-muted"><i class="fas fa-info-circle"></i> {{ exam.description }}</p>
+                            <p class="mb-2"><i class="fas fa-clock text-warning"></i> <strong>المدة:</strong> {{ exam.exam_duration }} دقيقة</p>
+                            <p class="mb-2"><i class="fas fa-redo text-success"></i> <strong>المحاولات:</strong> {{ exam.max_attempts }}</p>
+                            <p class="mb-2"><i class="fas fa-eye text-primary"></i> <strong>الحالة:</strong>
+                                {% if exam.is_visible %}
+                                    <span class="badge bg-success">مرئي</span>
+                                {% else %}
+                                    <span class="badge bg-danger">مخفي</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-2"><i class="fas fa-calendar-alt text-info"></i> <strong>تاريخ الإنشاء:</strong>
+                                {{ exam.created_at.strftime('%Y-%m-%d %H:%M') if exam.created_at else 'غير متوفر' }}
+                            </p>
+                            <p class="mb-2"><i class="fas fa-hourglass-start text-primary"></i> <strong>وقت البدء:</strong>
+                                {{ exam.start_time.strftime('%Y-%m-%d %H:%M') if exam.start_time else 'غير محدد' }}
+                            </p>
+                            <p><i class="fas fa-hourglass-end text-danger"></i> <strong>وقت الانتهاء:</strong>
+                                {{ exam.end_time.strftime('%Y-%m-%d %H:%M') if exam.end_time else 'غير محدد' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ✅ أدوات التحكم للمدرسين والمساعدين -->
+                    {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_edit_exams) %}
+                    <div class="btn-group">
+                        <!-- 🔹 تعديل الامتحان -->
+                        <a href="{{ url_for('edit_exam', exam_id=exam.id) }}" class="btn btn-sm btn-primary" title="تعديل الامتحان">
+                            <i class="fas fa-edit"></i>
+                        </a>
+
+                        <!-- 🔹 إخفاء/إظهار الامتحان -->
+                        <form action="{{ url_for('toggle_exam_visibility', exam_id=exam.id) }}" method="POST">
+                            <button type="submit" class="btn btn-sm btn-warning" title="إخفاء/إظهار الامتحان">
+                                {% if exam.is_visible %}
+                                <i class="fas fa-eye-slash"></i>
+                                {% else %}
+                                <i class="fas fa-eye"></i>
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <!-- 🔹 حذف الامتحان -->
+                        <form action="{{ url_for('delete_exam', exam_id=exam.id) }}" method="POST">
+                            <button type="submit" class="btn btn-sm btn-danger" title="حذف الامتحان" onclick="return confirm('هل أنت متأكد من حذف الامتحان؟');">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+
+                        <!-- 🔹 تقرير الامتحان -->
+                        <a href="{{ url_for('exam_report', exam_id=exam.id) }}" class="btn btn-sm btn-info" title="تقرير الامتحان">
+                            <i class="fas fa-chart-bar"></i> تقرير
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info mt-2"><i class="fas fa-exclamation-circle"></i> لا توجد امتحانات حالياً</div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .exam-item {
+        transition: all 0.3s ease-in-out;
+        background-color: #f8f9fa;
+        border-left: 5px solid #007bff;
+    }
+    .exam-item:hover {
+        transform: scale(1.02);
+        background-color: #e9ecef;
+        border-left: 5px solid #0056b3;
+    }
+    .exam-title:hover {
+        color: #007bff !important;
+        text-decoration: underline !important;
+    }
+    .start-btn {
+        transition: 0.3s ease-in-out;
+    }
+    .start-btn:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    .exam-info {
+        background: #f1f1f1;
+        border-left: 4px solid #28a745;
+    }
+    .exam-controls button, .exam-controls a {
+        margin: 0 2px;
+    }
+</style>
+
+        <!-- تبويب الواجبات -->
+<div class="tab-pane fade" id="homeworks" role="tabpanel">
+    <div class="card shadow p-3">
+        <h4><i class="fas fa-tasks"></i> الواجبات</h4>
+        {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_add_homework) %}
+        <a href="{{ url_for('add_homework', subject_id=subject.id) }}" class="btn btn-info mb-3">
+            <i class="fas fa-plus-circle"></i> إضافة واجب
+        </a>
+
+        {% endif %}
+
+        {% if homeworks %}
+        <div class="list-group">
+            {% for hw in homeworks %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="w-75">
+                        <h5>{{ hw.title }}</h5>
+                        <p class="text-muted">{{ hw.description }}</p>
+
+                        <!-- ✅ تحديث طريقة عرض تاريخ التسليم -->
+                        <div class="text-muted small">
+                            <i class="fas fa-clock"></i>
+                            موعد انتهاء التسليم: {{ hw.due_date_str }}
+                        </div>
+                        {% if session.role == 'student' %}
+
+                        <!-- ✅ عرض حالة التسليم والتفاصيل -->
+                        <div class="mt-2">
+                            <strong>{{ hw.status }}</strong>
+                            <p class="text-muted small">{{ hw.details|safe }}</p>
+                        </div>
+                            {% endif %}
+
+                        {% if session.role == 'student' %}
+                        <div class="mt-2">
+                            {% if hw.status == "لم يتم التسليم" and "انتهت المهلة" not in hw.details %}
+                            <form action="{{ url_for('submit_homework', subject_id=subject.id, homework_id=hw.id) }}" method="POST" enctype="multipart/form-data">
+                                <div class="input-group">
+                                    <input type="file" class="form-control" name="file" required>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-upload"></i> تسليم
+                                    </button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <div class="alert alert-danger py-2 mb-0">
+                                <i class="fas fa-lock"></i> لا يمكن التسليم الآن
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+{% if session.get('role') == 'student' %}
+                    <div class="btn-group">
+                        <a href="{{ url_for('homework_submissions', homework_id=hw.id) }}"
+                           class="btn btn-sm btn-info">
+                            <i class="fas fa-list"></i> التسليمات
+                        </a>
+{% endif %}
+                    {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_view_submissions) %}
+                    <div class="btn-group">
+                        <a href="{{ url_for('homework_submissions', homework_id=hw.id) }}"
+                           class="btn btn-sm btn-info">
+                            <i class="fas fa-list"></i> التسليمات
+                        </a>
+
+                        <form action="{{ url_for('delete_homework', homework_id=hw.id) }}" method="POST">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endfor %}
+
+  {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_add_homework) %}
+        <a href="{{ url_for('subject_homeworks', subject_id=subject.id) }}" class="btn btn-info mb-3">
+            <i class="fas fa-subject_homeworks"></i>انشاء تقرير 📄
+        </a>
+
+        {% endif %}
+
+
+
+        </div>
+        {% else %}
+        <div class="alert alert-info mt-2">لا توجد واجبات حالياً</div>
+        {% endif %}
+    </div>
+</div>
+
+
+              <!-- تبويب إدارة المادة -->
+ <div class="tab-pane fade show active" id="manage" role="tabpanel">
+        <div class="card shadow-lg p-3">
+            <h4 class="text-center text-primary mb-4">
+                <i class="fas fa-cogs"></i> أدوات الإدارة
+            </h4>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+
+                {% if session.get('role') == 'teacher' %}
+                <div class="col">
+                    <div class="card text-white bg-success shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-key fa-2x mb-2"></i>
+                            <h5 class="card-title">توليد أكواد التسجيل</h5>
+                            <form action="{{ url_for('generate_subject_codes', subject_id=subject.id) }}" method="POST">
+                                <button type="submit" class="btn btn-light w-100">🔑 توليد الأكواد</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' %}
+                <div class="col">
+                    <div class="card text-dark bg-warning shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-edit fa-2x mb-2"></i>
+                            <h5 class="card-title">تعديل معلومات المادة</h5>
+                            <a href="{{ url_for('edit_subject', subject_id=subject.id) }}" class="btn btn-dark w-100">✏ تعديل</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_manage_students) %}
+                <div class="col">
+                    <div class="card text-white bg-info shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-2x mb-2"></i>
+                            <h5 class="card-title">الطلاب المسجلين</h5>
+                            <a href="{{ url_for('registered_students', subject_id=subject.id) }}" class="btn btn-light w-100">👥 عرض الطلاب</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' %}
+                <div class="col">
+                    <div class="card text-white bg-primary shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tags fa-2x mb-2"></i>
+                            <h5 class="card-title">الأكواد المتاحة</h5>
+                            <a href="{{ url_for('available_codes', subject_id=subject.id) }}" class="btn btn-light w-100">📜 عرض الأكواد</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' or (session.get('role') == 'assistant' and permissions.can_view_progress) %}
+                <div class="col">
+                    <div class="card text-white bg-dark shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i>
+                            <h5 class="card-title">تقرير تقدم الطلاب</h5>
+                            <a href="{{ url_for('generate_report', subject_id=subject.id) }}" class="btn btn-light w-100">📊 عرض التقرير</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' %}
+                <div class="col">
+                    <div class="card text-white bg-secondary shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-question-circle fa-2x mb-2"></i>
+                            <h5 class="card-title">إضافة أسئلة التقييم</h5>
+                            <a href="{{ url_for('add_evaluation_question', subject_id=subject.id) }}" class="btn btn-light w-100">➕ إضافة سؤال</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' %}
+                <div class="col">
+                    <div class="card text-white bg-danger shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-toggle-on fa-2x mb-2"></i>
+                            <h5 class="card-title">تفعيل/تعطيل التقييم</h5>
+                            <form action="{{ url_for('toggle_evaluation', subject_id=subject.id) }}" method="post">
+                                {% if subject.evaluation_status %}
+                                    <button type="submit" class="btn btn-light w-100">🔴 تعطيل التقييم</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-light w-100">🟢 تفعيل التقييم</button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') in ['teacher', 'admin'] %}
+                <div class="col">
+                    <div class="card text-white bg-info shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-poll fa-2x mb-2"></i>
+                            <h5 class="card-title">عرض التقييمات</h5>
+                            <a href="{{ url_for('view_evaluations', subject_id=subject.id) }}" class="btn btn-light w-100">📊 عرض التقييمات</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session['role'] == 'teacher' %}
+                <div class="col">
+                    <div class="card text-white bg-primary shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-cog fa-2x mb-2"></i>
+                            <h5 class="card-title"> الهيئة المعاونة</h5>
+                            <a href="{{ url_for('manage_assistants', subject_id=subject.id) }}" class="btn btn-light w-100">⚙ إدارة</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if session.get('role') == 'teacher' %}
+                <div class="col">
+                    <div class="card text-white bg-danger shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-trash-alt fa-2x mb-2"></i>
+                            <h5 class="card-title">حذف المادة بالكامل</h5>
+                            <form action="{{ url_for('delete_subject', subject_id=subject.id) }}" method="POST" onsubmit="return confirm('⚠️ سيتم حذف جميع البيانات المرتبطة بالمادة! هل أنت متأكد؟')">
+                                <button type="submit" class="btn btn-light w-100">🗑 حذف المادة</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+
+
+<!-- سكريبت جلب الرسائل وإرسالها -->
+<script>
+    function loadChatMessages() {
+        fetch("{{ url_for('get_chat_messages', subject_id=subject.id) }}")
+            .then(response => response.json())
+            .then(data => {
+                let chatBox = document.getElementById("chat-messages");
+                chatBox.innerHTML = "";
+                data.forEach(msg => {
+                    let messageElement = document.createElement("p");
+                    messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
+                    chatBox.appendChild(messageElement);
+                });
+            });
+    }
+
+    document.getElementById("chat-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+        fetch("{{ url_for('send_chat_message', subject_id=subject.id) }}", {
+            method: "POST",
+            body: formData
+        }).then(response => response.json())
+          .then(data => {
+              if (data.status === "success") {
+                  loadChatMessages();
+                  this.reset();
+              }
+          });
+    });
+
+    setInterval(loadChatMessages, 5000);
+</script>
+</div>
+
+</div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('subjects') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة لقائمة المواد
+        </a>
+    </div>
+</div>
+
+{% endblock %}

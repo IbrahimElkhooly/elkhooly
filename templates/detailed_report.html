@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center my-4">اختر طالبًا لعرض تقريره في الامتحان</h2>
+
+    <form method="POST" action="{{ url_for('show_student_report', exam_id=exam_id) }}">
+        <div class="form-group">
+            <label for="student_id">اختر الطالب:</label>
+            <select class="form-control" name="student_id" required>
+                {% for student in students %}
+                   <option value="{{ student.id }}">{{ student.username }}</option>
+
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">عرض التقرير</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f9f9f9;
+        direction: rtl;
+        text-align: right;
+    }
+
+    .form-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .nav-tabs .nav-item .nav-link {
+        font-weight: bold;
+    }
+
+    .tab-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 0 0 15px 15px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        font-weight: bold;
+        color: #007bff;
+        text-align: center;
+    }
+
+    .btn-primary {
+        width: 100%;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-check input[type="radio"] {
+        margin-left: 5px;
+    }
+
+    .question-card {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 10px;
+        position: relative;
+    }
+
+    .question-card h5 {
+        font-size: 16px;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .question-card .badge {
+        background-color: #007bff;
+        color: white;
+        font-size: 12px;
+    }
+
+    .question-actions {
+        position: absolute;
+        left: 15px;
+        top: 15px;
+    }
+
+    .question-actions button, .question-actions a {
+        margin-left: 5px;
+    }
+</style>
+
+<div class="container">
+    <h2 class="text-center my-4">إدارة الأسئلة <i class="fas fa-tasks"></i></h2>
+
+    <ul class="nav nav-tabs" id="questionTabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="manual-tab" data-bs-toggle="tab" href="#manual" role="tab">
+                <i class="fas fa-keyboard"></i> إضافة سؤال يدوي
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="bank-tab" data-bs-toggle="tab" href="#bank" role="tab">
+                <i class="fas fa-database"></i> اضافة من بنك الأسئلة
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="added-tab" data-bs-toggle="tab" href="#added" role="tab">
+                <i class="fas fa-list"></i> الأسئلة المضافة
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- إضافة سؤال يدوي -->
+        <div class="tab-pane fade show active" id="manual" role="tabpanel">
+            <form method="POST" class="mt-3">
+                <div class="form-group">
+                    <label>نص السؤال:</label>
+                    <textarea class="form-control" name="question_text" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>نوع السؤال:</label>
+                    <select class="form-control" id="question_type" name="question_type" onchange="showFields()" required>
+                        <option value="mcq">اختيار من متعدد</option>
+                        <option value="true_false">صح/خطأ</option>
+                        <option value="short_answer">إجابة قصيرة</option>
+                    </select>
+                </div>
+                <div id="mcq_fields" style="display:none;">
+                    <p>أدخل الخيارات وحدد الصحيح:</p>
+                    {% for i in range(1, 5) %}
+                    <div class="form-check">
+                        <input type="radio" name="correct_choice" value="{{ i }}" required>
+                        <input type="text" class="form-control" name="choice{{ i }}" placeholder="الاختيار {{ i }}" required>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div id="true_false_fields" style="display:none;">
+                    <label>الإجابة الصحيحة:</label>
+                    <select class="form-control" name="correct_answer_tf">
+                        <option value="صح">صح</option>
+                        <option value="خطأ">خطأ</option>
+                    </select>
+                </div>
+                <div id="short_answer_fields" style="display:none;">
+                    <label>الإجابة الصحيحة:</label>
+                    <input type="text" class="form-control" name="correct_answer_short">
+                </div>
+                <label>
+    <input type="checkbox" name="save_to_bank"> حفظ السؤال في بنك الأسئلة
+</label>
+                <input type="hidden" name="subject_id" value="{{ subject_id }}">
+
+<label>الصف الدراسي:</label>
+<input type="text" name="grade" required>
+
+
+                <button type="submit" class="btn btn-primary mt-3">إضافة السؤال</button>
+            </form>
+        </div>
+
+        <!-- بنك الأسئلة -->
+        <div class="tab-pane fade" id="bank" role="tabpanel">
+            <h4 class="mt-3">اختر من بنك الأسئلة</h4>
+            <table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>السؤال</th>
+            <th>الإجابة الصحيحة</th>
+            <th>إضافة</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for question in bank_questions %}
+        <tr id="bank-question-{{ question.id }}">
+            <td>{{ question.question_text }}</td>
+            <td>{{ question.correct_option }}</td>
+            <td>
+                <button class="btn btn-success btn-sm add-question" data-question-id="{{ question.id }}">إضافة</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+        </div>
+
+        <!-- الأسئلة المضافة -->
+        <div class="tab-pane fade" id="added" role="tabpanel">
+            <h4 class="mt-3">الأسئلة المضافة</h4>
+            {% if questions %}
+                {% for question in questions %}
+                <div class="question-card">
+                    <div class="question-actions">
+                        <a href="{{ url_for('edit_question', question_id=question.id) }}" class="btn btn-warning btn-sm">تعديل</a>
+                        <form action="{{ url_for('delete_question', question_id=question.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل تريد حذف هذا السؤال؟')">حذف</button>
+                        </form>
+                    </div>
+                    <h5>{{ loop.index }}. {{ question.question_text }}</h5>
+                    <span class="badge">{{ question.question_type }}</span>
+                    <p><strong>الإجابة الصحيحة:</strong> {{ question.correct_answer }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+            <p class="text-muted">لا توجد أسئلة مضافة.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".add-question").forEach(button => {
+        button.addEventListener("click", function() {
+            let questionId = this.getAttribute("data-question-id");
+            let examId = "{{ exam_id }}";
+
+            fetch(`/add_bank_question/${examId}/${questionId}`, {
+                method: "POST",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`bank-question-${questionId}`).remove();  // ✅ إخفاء السؤال من القائمة
+                } else {
+                    alert("حدث خطأ أثناء إضافة السؤال!");
+                }
+            });
+        });
+    });
+});
+
+
+    function showFields() {
+        const type = document.getElementById('question_type').value;
+        document.getElementById('mcq_fields').style.display = (type === 'mcq') ? 'block' : 'none';
+        document.getElementById('true_false_fields').style.display = (type === 'true_false') ? 'block' : 'none';
+        document.getElementById('short_answer_fields').style.display = (type === 'short_answer') ? 'block' : 'none';
+    }
+document.getElementById('question_type').addEventListener('change', showFields);
+</script>
+{% endblock %}

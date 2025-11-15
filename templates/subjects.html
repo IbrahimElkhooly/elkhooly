@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg rounded">
+        <div class="card-header bg-primary text-white text-center py-3">
+            <h3 class="mb-0"><i class="fas fa-book-open"></i> المواد الدراسية</h3>
+        </div>
+
+        <div class="card-body">
+
+            <!-- التبويبات -->
+            <ul class="nav nav-pills nav-justified mb-4" id="subjectsTabs" role="tablist">
+
+                <li class="nav-item">
+                    <a class="nav-link active" id="available-subjects-tab" data-bs-toggle="tab" href="#available-subjects" role="tab" aria-controls="available-subjects" aria-selected="true">
+                        <i class="fas fa-book"></i> المواد المتاحة
+                    </a>
+                </li>
+
+                {% if session.get('role') == 'student' %}
+                <li class="nav-item">
+                    <a class="nav-link" id="enroll-tab" data-bs-toggle="tab" href="#enroll" role="tab" aria-controls="enroll" aria-selected="false">
+                        <i class="fas fa-sign-in-alt"></i> تسجيل مادة
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="tab-content" id="subjectsTabsContent">
+
+                <!-- تاب المواد المتاحة -->
+                <div class="tab-pane fade show active" id="available-subjects" role="tabpanel" aria-labelledby="available-subjects-tab">
+                    <div class="row">
+                        {% if subjects %}
+                            {% set colors = ['#f8d7da', '#d4edda', '#d1ecf1', '#fff3cd', '#d6d8d9'] %}
+                            {% for subject in subjects %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card shadow-sm border-0 rounded-lg h-100" style="background-color: {{ colors[loop.index0 % colors|length] }};">
+                                    <div class="card-body d-flex flex-column justify-content-between">
+
+                                        <h5 class="card-title text-dark fw-bold">
+                                            <i class="fas fa-book text-primary"></i> {{ subject.name }}
+                                        </h5>
+
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-chalkboard-teacher"></i> المعلم: {{ subject.teacher }}
+                                        </p>
+
+                                        <div class="mt-auto d-flex justify-content-between">
+                                            <a href="{{ url_for('subject_page', subject_id=subject.id) }}" class="btn btn-info btn-sm text-white">
+                                                <i class="fas fa-eye"></i> عرض
+                                            </a>
+
+                                            {% if session.get('username') == subject.teacher %}
+                                                <div class="d-flex">
+                                                    <a href="{{ url_for('edit_subject', subject_id=subject.id) }}" class="btn btn-warning btn-sm me-2">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+
+                                                    <form action="{{ url_for('delete_subject', subject_id=subject.id) }}" method="POST"
+                                                          onsubmit="return confirm('هل أنت متأكد من حذف المادة؟ سيتم حذف جميع الامتحانات والدرجات المرتبطة بها.')">
+                                                        <button type="submit" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info text-center py-3">
+                                    {% if session.get('role') == 'teacher' %}
+                                        <i class="fas fa-info-circle me-2"></i> لم تقم بإضافة أي مواد بعد
+                                    {% else %}
+                                        <i class="fas fa-info-circle me-2"></i> لا توجد مواد متاحة حالياً
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- تاب تسجيل المواد (يظهر فقط للطلاب) -->
+                {% if session.get('role') == 'student' %}
+                <div class="tab-pane fade" id="enroll" role="tabpanel" aria-labelledby="enroll-tab">
+                    <div class="text-center my-4">
+                        <h5 class="fw-bold">تسجيل مادة باستخدام كود</h5>
+                        <p class="text-muted">أدخل كود المادة الذي حصلت عليه من المعلم للتسجيل.</p>
+                        <form action="{{ url_for('enroll_subject') }}" method="POST" class="d-inline-block w-50">
+                            <div class="input-group">
+                                <input type="text" name="code" class="form-control" placeholder="أدخل كود المادة" required>
+                                <button type="submit" class="btn btn-success"><i class="fas fa-sign-in-alt"></i> تسجيل</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

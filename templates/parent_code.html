@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg p-4 text-center">
+        <h3>كود ولي الأمر</h3>
+        <p>يمكنك إعطاء هذا الكود لولي أمرك لكي يتابع درجاتك.</p>
+        <h2 class="text-primary">{{ parent_code }}</h2>
+        <a href="{{ url_for('blog') }}" class="btn btn-secondary mt-3">العودة للوحة التحكم</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}المدونة{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #1877f2;
+        --hover-bg: #e7f3ff;
+    }
+
+    .dashboard-container {
+        direction: rtl;
+        background: #f0f2f5;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .dashboard-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: transform 0.3s, background-color 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .dashboard-card i {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-card.subjects { background-color: #ffeb3b; }
+    .dashboard-card.add-subject { background-color: #4caf50; color: white; }
+    .dashboard-card.admin-panel { background-color: #f44336; color: white; }
+    .dashboard-card.grades { background-color: #ff9800; color: white; }
+    .dashboard-card.teacher-grades { background-color: #9c27b0; color: white; }
+    .dashboard-card.bank { background-color: #808080; color: white; }
+    .dashboard-card.analytics { background-color: #00bcd4; color: white; } /* لون مميز للكارت الجديد */
+
+    .dashboard-card:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="container">
+        <div class="dashboard-grid">
+
+            <a href="{{ url_for('subjects') }}" class="dashboard-card subjects">
+                <i class="fas fa-book-open"></i>
+                المواد الدراسية
+            </a>
+
+            {% if session.get('role') == 'teacher' %}
+            <a href="{{ url_for('add_subject') }}" class="dashboard-card add-subject">
+                <i class="fas fa-plus-circle"></i>
+                إضافة مادة جديدة
+            </a>
+            {% endif %}
+
+            {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('manage_users') }}" class="dashboard-card admin-panel">
+                <i class="fas fa-user-shield"></i>
+                لوحة التحكم الإدارية
+            </a>
+            {% endif %}
+
+            {% if session.get('role') == 'student' %}
+            <a href="{{ url_for('student_grades') }}" class="dashboard-card grades">
+                <i class="fas fa-chart-line"></i>
+                عرض الدرجات
+            </a>
+            {% endif %}    {% if session.get('role') == 'student' %}
+            <a href="{{ url_for('student_progress') }}" class="btn btn-primary">📊
+
+                عرض تقدمي
+            </a>
+            {% endif %}
+
+
+
+            {% if session.get('role') == 'teacher' %}
+            <a href="{{ url_for('teacher_grades') }}" class="dashboard-card teacher-grades">
+                <i class="fas fa-user-graduate"></i>
+                درجات الطلاب
+            </a>
+            {% endif %}
+
+            <!-- الكارت الجديد الخاص بلوحة التحكم التحليلية -->
+            {% if session.get('role') in ['admin', 'teacher'] %}
+            <a href="{{ url_for('dashboard') }}" class="dashboard-card analytics">
+                <i class="fas fa-chart-pie"></i>
+                لوحة التحكم التحليلية
+            </a>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

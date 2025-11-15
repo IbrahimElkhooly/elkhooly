@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            direction: rtl;
+            text-align: right;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .table {
+            font-size: 18px;
+            border: 2px solid #007bff;
+            background: white;
+        }
+        .table th {
+            background-color: #007bff;
+            color: white;
+            font-size: 20px;
+            padding: 15px;
+        }
+        .table td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+        .btn-export {
+            font-size: 18px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+
+    <h2 class="text-center mb-4">{{ title }}</h2>
+
+    {% if months and performance_data %}
+    <canvas id="performanceChart" class="mb-4"></canvas>
+    {% endif %}
+
+    {% if student_reports %}
+    <table class="table table-bordered table-hover text-center">
+        <thead class="table-primary">
+            <tr>
+                <th>📊 المعدل النهائي</th>
+                <th>📘 نسبة الواجبات</th>
+                <th>📄 الواجبات (المُسلمة / الكلي)</th>
+                <th>📝 نسبة الامتحانات</th>
+                <th>🛑 الامتحانات (أداها / الكلي)</th>
+                <th>👨‍🎓 اسم الطالب</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student_id, data in student_reports.items() %}
+            <tr>
+                <td><strong>{{ "%.2f" | format(data['final_grade']) }}%</strong></td>
+                <td>{{ "%.2f" | format(data['final_homework_percentage']) }}%</td>
+                <td>{{ data['homework_count'] }} / {{ total_homeworks }}</td>
+                <td>{{ "%.2f" | format(data['final_exam_percentage']) }}%</td>
+                <td>{{ data['exam_count'] }} / {{ total_exams }}</td>
+                <td>{{ data['student_name'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <button class="btn btn-success btn-export">📄 تصدير إلى PDF</button>
+    </div>
+
+    {% if months and performance_data %}
+    <script>
+        var ctx = document.getElementById('performanceChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ months | tojson }},
+                datasets: [{
+                    label: 'معدل الأداء',
+                    data: {{ performance_data | tojson }},
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+
+</body>
+</html>

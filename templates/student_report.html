@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center my-4">تقرير مفصل للطالب: {{ student.name }} في الامتحان</h2>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>السؤال</th>
+                <th>إجابة الطالب</th>
+                <th>الإجابة الصحيحة</th>
+                <th>النتيجة</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for answer in answers %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ answer.question_text }}</td>
+                <td>{{ answer.user_answer }}</td>
+                <td>{{ answer.correct_answer }}</td>
+                <td>
+                    {% if answer.is_correct %}
+                        ✅ صحيح
+                    {% else %}
+                        ❌ خطأ
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h4>النتيجة النهائية: {{ student_score }} / {{ total_questions }}</h4>
+    <h4>النسبة المئوية: {{ percentage }}%</h4>
+
+</div>
+{% endblock %}

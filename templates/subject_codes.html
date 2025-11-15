@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>أكواد التسجيل لمادة  - {{ subject_name }}</title>
+</head>
+<body>
+    <h2>أكواد التسجيل - {{ subject_name }}</h2>
+    <table border="1" width="100%">
+        <thead>
+            <tr>
+                <th>الكود</th>
+                <th>الحالة</th>
+                <th>الطالب</th>
+                <th>تاريخ التسجيل</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for code in codes %}
+            <tr>
+                <td>{{ code.code }}</td>
+                <td>{% if code.is_used %} مستخدم {% else %} متاح {% endif %}</td>
+                <td>{% if code.student_name %} {{ code.student_name }} {% else %} - {% endif %}</td>
+                <td>{% if code.used_at %} {{ code.used_at }} {% else %} - {% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{{ url_for('subject_page', subject_id=subject_id) }}" class="btn btn-secondary">العودة إلى صفحة المادة</a>
+</body>
+</html>

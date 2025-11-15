@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 تسليم الواجب</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2, h3 {
+            color: #007bff;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        hr {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 16px;
+        }
+
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            display: block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 400px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .upload-area {
+            border: 2px dashed #007bff;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📖 تفاصيل الواجب</h2>
+        <p><strong>📌 عنوان الواجب:</strong> {{ homework['title'] }}</p>
+        <hr>
+
+        <h3>📋 حالة تسليم الواجب</h3>
+        {% if submission and submission.get('submitted_at') %}
+            <p><strong>📅 تاريخ التسليم:</strong> {{ submission['submitted_at'] }}</p>
+            <p><strong>⭐ التقييم:</strong> {{ submission['grade'] }}</p>
+            <p><strong>📝 تعليق المعلم:</strong> {{ submission['comment'] }}</p>
+        {% else %}
+            <p>⚠️ لم تقم بتسليم هذا الواجب بعد.</p>
+            <button class="upload-btn" onclick="openModal()">📤 تسليم الواجب</button>
+        {% endif %}
+
+        <a href="{{ url_for('dashboard') }}">🏠 العودة إلى الرئيسية</a>
+    </div>
+
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>رفع ملف</h3>
+                <button class="btn-close" onclick="closeModal()">×</button>
+            </div>
+            <p>أرفق الملف أدناه</p>
+            <form action="{{ url_for('submit_homework', subject_id=subject_id, homework_id=homework.id) }}" method="POST" enctype="multipart/form-data">
+                <div class="upload-area">
+                    <input type="file" name="file" required>
+                </div>
+                <button type="submit" class="upload-btn">رفع الملف</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById("uploadModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("uploadModal").style.display = "none";
+        }
+    </script>
+</body>
+</html>

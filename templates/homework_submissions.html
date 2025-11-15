@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">
+        <i class="fas fa-file-alt text-primary"></i> تسليمات الواجب: {{ homework.title }}
+    </h2>
+
+<table class="table table-bordered table-striped text-center">
+    <thead class="table-dark">
+        <tr>
+            <th>اسم الطالب</th>
+            <th>الملف</th>
+            <th>تاريخ التسليم</th>
+            <th>التقييم</th>
+            <th>التعليق</th>
+            <th>إجراء</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sub in submissions %}
+
+        <tr>
+            <td class="fw-bold">{{ sub.student_name }}</td>
+            <td>
+                <a href="{{ url_for('static', filename='homework_uploads/' + sub.filename) }}" target="_blank" class="btn btn-primary btn-sm">
+                    <i class="fas fa-download"></i> تحميل
+                </a>
+            </td>
+            <td class="text-muted">{{ sub.submitted_at }}</td>
+            <td>
+                {% if sub.grade is not none %}
+                    <span class="badge bg-success">{{ sub.grade }} / 10</span>
+                {% else %}
+                    <span class="badge bg-secondary">غير مقيم</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if sub.comment %}
+                    <span class="text-muted">{{ sub.comment }}</span>
+                {% else %}
+                    <span class="text-muted">لا يوجد تعليق</span>
+                {% endif %}
+            </td>
+            <td>
+                <form action="{{ url_for('homework_submissions', homework_id=homework.id) }}" method="POST" class="d-flex flex-column">
+                    <input type="hidden" name="student_name" value="{{ sub.student_name }}">
+                    <input type="number" name="grade" min="0" max="10" class="form-control mb-2" required>
+                    <textarea name="comment" class="form-control mb-2" placeholder="أدخل تعليقًا"></textarea>
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="fas fa-check"></i> حفظ
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+
+
+{% endblock %}

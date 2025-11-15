@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        <h2 class="text-center text-primary">
+            <i class="fas fa-edit"></i> تعديل الامتحان
+        </h2>
+
+        <form method="POST">
+
+            <!-- اسم الامتحان -->
+            <div class="card p-3 mt-3 border-primary shadow-sm">
+                <div class="form-group">
+                    <label class="fw-bold text-primary"><i class="fas fa-file-signature"></i> اسم الامتحان:</label>
+                    <input type="text" name="exam_name" value="{{ exam.exam_name }}" class="form-control" required>
+                </div>
+            </div>
+
+            <!-- وصف الامتحان -->
+            <div class="card p-3 mt-3 border-primary shadow-sm">
+                <div class="form-group">
+                    <label class="fw-bold text-primary"><i class="fas fa-info-circle"></i> وصف الامتحان:</label>
+                    <textarea name="description" class="form-control" rows="3">{{ exam.description }}</textarea>
+                </div>
+            </div>
+
+            <!-- تاريخ ووقت بداية الامتحان -->
+            <div class="card p-3 mt-3 border-primary shadow-sm">
+                <div class="form-group">
+                    <label class="fw-bold text-primary"><i class="fas fa-calendar-alt"></i> تاريخ بداية الامتحان:</label>
+                    <input type="date" name="start_date" class="form-control" required value="{{ exam.start_time.strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="form-group mt-2">
+                    <label class="fw-bold text-primary"><i class="fas fa-clock"></i> وقت بداية الامتحان:</label>
+                    <input type="time" name="start_time" class="form-control" required value="{{ exam.start_time.strftime('%H:%M') }}">
+                </div>
+            </div>
+
+                           <!-- وقت نهاية الامتحان -->
+                <div class="card p-3 mt-3 border-danger shadow-sm">
+                    <div class="form-group">
+                        <label class="fw-bold text-danger"><i class="fas fa-clock"></i> وقت نهاية الامتحان:</label>
+                        <input type="time" name="end_time" class="form-control" required
+                               value="{{ exam.end_time.strftime('%H:%M') if exam.end_time else '' }}">
+                    </div>
+                </div>
+                div>
+
+            <!-- مدة الامتحان لكل طالب -->
+            <div class="card p-3 mt-3 border-success shadow-sm">
+                <div class="form-group">
+                    <label class="fw-bold text-success"><i class="fas fa-hourglass-half"></i> مدة الامتحان لكل طالب (بالدقائق):</label>
+                    <input type="number" name="exam_duration" class="form-control" required min="1" value="{{ exam.exam_duration }}">
+                </div>
+            </div>
+
+            <!-- عدد المحاولات المسموحة -->
+            <div class="card p-3 mt-3 border-primary shadow-sm">
+                <div class="form-group">
+                    <label class="fw-bold text-primary"><i class="fas fa-sync-alt"></i> عدد المحاولات المسموحة:</label>
+                    <input type="number" name="max_attempts" class="form-control" required value="{{ exam.max_attempts }}">
+                </div>
+            </div>
+
+            <!-- أزرار الإجراء -->
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> حفظ التعديلات
+                </button>
+                <a href="{{ url_for('subject_page', subject_id=exam.subject_id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> الرجوع
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>📊 نتائج تقييم المادة</h2>
+
+    {% for question_id, data in evaluations.items() %}
+        <div class="card my-3">
+            <div class="card-header">
+                <h4>{{ data.question_text }}</h4>
+            </div>
+            <div class="card-body">
+                {% if data.type == 'rating' %}
+                    <ul>
+                        {% for response in data.responses %}
+                            <li>{{ response.student }}: ⭐ {{ response.answer }}/5</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    {% for response in data.responses %}
+                        <p><strong>{{ response.student }}:</strong> {{ response.answer }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <a href="{{ url_for('subjects') }}" class="btn btn-secondary">🔙 العودة للمواد</a>
+{% endblock %}

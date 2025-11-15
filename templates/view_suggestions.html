@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>اقتراحات المستخدمين</h2>
+    {% for suggestion in suggestions %}
+        <div class="card my-2">
+            <div class="card-body">
+                <h5 class="card-title">{{ suggestion.username }}</h5>
+                <p class="card-text">{{ suggestion.suggestion }}</p>
+                <small class="text-muted">تاريخ الإرسال: {{ suggestion.created_at }}</small>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

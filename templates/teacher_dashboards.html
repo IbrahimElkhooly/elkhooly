@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📊 تقرير تقدم الطلاب</h2>
+
+<table border="1">
+    <tr>
+        <th>اسم الطالب</th>
+        <th>عنوان الدرس</th>
+        <th>نسبة التقدم</th>
+        <th>الحالة</th>
+    </tr>
+    {% for entry in progress_data %}
+    <tr>
+        <td>{{ entry.username }}</td>
+        <td>{{ entry.title }}</td>
+        <td>{{ entry.progress }}%</td>
+        <td>
+            {% if entry.completed %}
+                ✅ مكتمل
+            {% else %}
+                ⏳ قيد التعلم
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تصفية الطلاب حسب الأداء</title>
+    <script>
+        function filterStudents(performance) {
+            fetch(`/filter_students?performance=${performance}`)
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById("studentsTableBody");
+                    tableBody.innerHTML = ""; // مسح البيانات القديمة
+
+                    data.forEach(student => {
+                        let row = `<tr>
+                            <td>${student[0]}</td>  <!-- ID الطالب -->
+                            <td>${student[1]}</td>  <!-- ID المادة -->
+                            <td>${student[2]}</td>  <!-- عدد الاختبارات المكتملة -->
+                            <td>${student[3]}</td>  <!-- عدد المهام المكتملة -->
+                            <td>${student[4]}</td>  <!-- متوسط الدرجات -->
+                            <td>${student[5]}</td>  <!-- آخر نشاط -->
+                        </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("خطأ في جلب البيانات:", error));
+        }
+    </script>
+</head>
+<body>
+
+    <h2>تصفية الطلاب حسب الأداء</h2>
+
+    <!-- أزرار تصفية الأداء -->
+    <button onclick="filterStudents('all')">عرض جميع الطلاب</button>
+    <button onclick="filterStudents('high')">عرض المتفوقين (≥ 85)</button>
+    <button onclick="filterStudents('low')">عرض الطلاب الذين يحتاجون لتحسين (< 50)</button>
+
+    <!-- جدول عرض النتائج -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID الطالب</th>
+                <th>ID المادة</th>
+                <th>الاختبارات المكتملة</th>
+                <th>المهام المكتملة</th>
+                <th>متوسط الدرجات</th>
+                <th>آخر نشاط</th>
+            </tr>
+        </thead>
+        <tbody id="studentsTableBody">
+            <!-- سيتم ملء البيانات هنا -->
+        </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,42 +1,66 @@
-from flask import Flask, render_template, request, redirect,jsonify, abort, url_for, session, flash, make_response
+from flask import Flask, render_template, request, redirect, jsonify, abort, url_for, session, flash, make_response
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
 import sqlite3
 from werkzeug.security import generate_password_hash
-
 import os
 from werkzeug.utils import secure_filename
-
 import pdfkit
-
-from werkzeug.utils import secure_filename
-import os
-
-
-
-from werkzeug.utils import secure_filename
-import os
 import random
 
 app = Flask(__name__)
 app.secret_key = '1a2b3c4d5e6d7g8h9i10'
 
-# إعدادات الاتصال بقاعدة البيانات
-app.config['MYSQL_HOST'] = 'localhost'
+# ⚡ الإعدادات المعدلة للاتصال بالسيرفر الخارجي
+app.config['MYSQL_HOST'] = 'hopper.proxy.rlwy.net'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''  # ضع كلمة مرور قاعدة البيانات هنا
-app.config['MYSQL_DB'] = 'loginapp'
+app.config['MYSQL_PASSWORD'] = 'bCxdRxziPcrfHZvRmkltXzVZEqsuclWb'
+app.config['MYSQL_DB'] = 'railway'
+app.config['MYSQL_PORT'] = 54636
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 mysql = MySQL(app)
 
+# ⚡ الاتصال المباشر بقاعدة البيانات الخارجية
+def get_db_connection():
+    try:
+        db = MySQLdb.connect(
+            host='hopper.proxy.rlwy.net',
+            user='root',
+            passwd='bCxdRxziPcrfHZvRmkltXzVZEqsuclWb',
+            db='railway',
+            port=54636,
+            charset="utf8",
+            connect_timeout=10
+        )
+        print("✅ تم الاتصال بقاعدة البيانات الخارجية بنجاح!")
+        return db
+    except Exception as e:
+        print(f"❌ فشل الاتصال بقاعدة البيانات الخارجية: {e}")
+        # استخدام الإعدادات المحلية كبديل
+        try:
+            db = MySQLdb.connect(
+                host="localhost",
+                user="root",
+                passwd="",
+                db="loginapp",
+                charset="utf8"
+            )
+            print("🔄 استخدام قاعدة البيانات المحلية")
+            return db
+        except Exception as local_error:
+            print(f"❌ فشل الاتصال المحلي أيضاً: {local_error}")
+            return None
 
-
-# إعداد الاتصال بقاعدة البيانات
-db = MySQLdb.connect(host="localhost", user="root", passwd="", db="loginapp", charset="utf8")
-cursor = db.cursor()
-
+# إنشاء اتصال بقاعدة البيانات
+db = get_db_connection()
+if db:
+    cursor = db.cursor()
+    print("🎯 تم تهيئة الاتصال بقاعدة البيانات")
+else:
+    print("🚨 فشل في إنشاء الاتصال بقاعدة البيانات")
+    cursor = None
 
 from werkzeug.security import check_password_hash
 
@@ -4214,3 +4238,4 @@ def generate_report(subject_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
